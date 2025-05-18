@@ -9,8 +9,8 @@ const char pass[] = "";
 
 // Your server info
 const char server[] = "als.best";
-const int  port     = 8080;
-const char token[]  = "A1_TEST_TOKEN";  // <-- Replace with your actual token
+const int  port     = 8085;
+const char token[]  = "A2_TEST_TOKEN";  // <-- Replace with your actual token
 
 #define SerialMon Serial
 SoftwareSerial SerialAT(0, 1); // RX, TX
@@ -19,12 +19,12 @@ TinyGsm modem(SerialAT);
 TinyGsmClient client(modem);
 
 void setup() {
-  SerialMon.begin(115200);
+  SerialMon.begin(9600);
   delay(10);
   SerialMon.println("=== ThingsBoard Telemetry Test ===");
 
   SerialAT.begin(9600);
-  delay(3000);
+  delay(2000);
 
   SerialMon.println("Starting modem...");
   if (!modem.restart()) {
