@@ -3,16 +3,15 @@
 #include <TinyGsmClient.h>
 #include <SoftwareSerial.h>
 
-const char apn[]  = "onomondo";   // Replace with your APN
+const char apn[]  = "onomondo";  // SIM card APN
 const char user[] = "";
 const char pass[] = "";
 
-// Your server details
-const char server[] = "als.best";  // Replace with your domain or IP
-const int  port     = 8085;                 // Use 443 for HTTPS (not recommended with M95)
-const char resource[] = "A1_TEST_TOKEN"; // Example: "/api/test"
+// Your server info
+const char server[] = "als.best";
+const int  port     = 8080;
+const char token[]  = "A1_TEST_TOKEN";  // <-- Replace with your actual token
 
-// Serial interfaces
 #define SerialMon Serial
 SoftwareSerial SerialAT(7, 8); // RX, TX
 
@@ -22,50 +21,54 @@ TinyGsmClient client(modem);
 void setup() {
   SerialMon.begin(115200);
   delay(10);
+  SerialMon.println("=== ThingsBoard Telemetry Test ===");
 
-  SerialMon.println("=== Quectel M95 -> Custom Server Test ===");
-
-  // Start modem communication
   SerialAT.begin(9600);
   delay(3000);
 
-  SerialMon.println("Initializing modem...");
-  modem.restart();
+  SerialMon.println("Starting modem...");
+  if (!modem.restart()) {
+    SerialMon.println("Modem restart failed!");
+    return;
+  }
+  SerialMon.println("Modem ready.");
 
-  String modemInfo = modem.getModemInfo();
-  SerialMon.print("Modem Info: ");
-  SerialMon.println(modemInfo);
-
-  SerialMon.print("Waiting for network...");
+  SerialMon.println("Waiting for network...");
   if (!modem.waitForNetwork()) {
-    SerialMon.println(" fail");
+    SerialMon.println("Network failed");
     return;
   }
-  SerialMon.println(" connected");
+  SerialMon.println("Network connected.");
 
-  SerialMon.print("Connecting to GPRS...");
+  SerialMon.println("Connecting to GPRS...");
   if (!modem.gprsConnect(apn, user, pass)) {
-    SerialMon.println(" fail");
+    SerialMon.println("GPRS failed");
     return;
   }
-  SerialMon.println(" connected");
+  SerialMon.println("GPRS connected.");
 
-  SerialMon.print("Connecting to server: ");
-  SerialMon.println(server);
-
+  SerialMon.println("Connecting to ThingsBoard...");
   if (!client.connect(server, port)) {
-    SerialMon.println("Connection failed");
+    SerialMon.println("Connection to server failed");
     return;
   }
+  SerialMon.println("Connected to server.");
 
-  SerialMon.println("Connected to server");
+  // Build the HTTP POST
+  String url = String("/api/v1/") + token + "/telemetry";
+  String payload = "{\"temperature\":25}";
 
-  // Create basic HTTP GET request
-  client.print(String("GET ") + resource + " HTTP/1.1\r\n");
+  client.print(String("POST ") + url + " HTTP/1.1\r\n");
   client.print(String("Host: ") + server + "\r\n");
-  client.print("Connection: close\r\n\r\n");
+  client.print("Content-Type: application/json\r\n");
+  client.print("Connection: close\r\n");
+  client.print("Content-Length: ");
+  client.print(payload.length());
+  client.print("\r\n\r\n");
+  client.print(payload);
 
-  // Read and print the response
+  SerialMon.println("Telemetry sent. Reading response...");
+
   while (client.connected() || client.available()) {
     if (client.available()) {
       char c = client.read();
@@ -74,9 +77,9 @@ void setup() {
   }
 
   client.stop();
-  SerialMon.println("\nDisconnected");
+  SerialMon.println("\nDisconnected.");
 }
 
 void loop() {
-  // Nothing to do here
+  // Nothing here for now
 }

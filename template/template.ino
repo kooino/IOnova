@@ -23,7 +23,7 @@
 
 // Your GPRS credentials
 // Leave empty, if missing user or pass
-const char apn[]  = "internet";
+const char apn[]  = "onomondo";
 const char user[] = "";
 const char pass[] = "";
 
@@ -31,7 +31,7 @@ const char pass[] = "";
 // to understand how to obtain an access token
 #define TOKEN               "YOUR_ACCESS_TOKEN"
 #define THINGSBOARD_SERVER  "demo.thingsboard.io"
-#define THINGSBOARD_PORT    80
+#define THINGSBOARD_PORT    80 
 
 // Baud rate for debug serial
 #define SERIAL_DEBUG_BAUD   115200
