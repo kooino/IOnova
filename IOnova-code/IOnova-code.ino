@@ -3,14 +3,14 @@
 #include <TinyGsmClient.h>
 #include <SoftwareSerial.h>
 
-const char apn[]  = "internet";   // Replace with your APN
+const char apn[]  = "onomondo";   // Replace with your APN
 const char user[] = "";
 const char pass[] = "";
 
 // Your server details
-const char server[] = "your.server.com";  // Replace with your domain or IP
-const int  port     = 80;                 // Use 443 for HTTPS (not recommended with M95)
-const char resource[] = "/your_endpoint"; // Example: "/api/test"
+const char server[] = "als.best";  // Replace with your domain or IP
+const int  port     = 8085;                 // Use 443 for HTTPS (not recommended with M95)
+const char resource[] = "A1_TEST_TOKEN"; // Example: "/api/test"
 
 // Serial interfaces
 #define SerialMon Serial
