@@ -1,19 +1,19 @@
-#define TINY_GSM_MODEM_SIM900  // M10 is AT-compatible with SIM900
+#define TINY_GSM_MODEM_SIM900  // M10 is SIM900-compatible
 
 #include <TinyGsmClient.h>
 
-// SIM credentials
-const char apn[]  = "onomondo";  // Replace with your SIM's APN
+// SIM card credentials
+const char apn[]  = "onomondo";  // Replace with your actual APN
 const char user[] = "";
 const char pass[] = "";
 
-// ThingsBoard credentials
-const char server[] = "als.best";        // Your ThingsBoard server
-const int  port     = 8085;              // HTTP port
-const char token[]  = "A1_TEST_TOKEN";   // Replace with your device access token
+// ThingsBoard server settings
+const char server[] = "als.best";        // Your server
+const int  port     = 8085;              // Port (HTTP)
+const char token[]  = "A1_TEST_TOKEN";   // Replace with your access token
 
-#define SerialMon Serial     // USB Serial Monitor
-#define SerialAT  Serial1    // M10 modem on Serial1 (pins 18/19)
+#define SerialMon Serial
+#define SerialAT Serial1    // M10 on pins 18 (TX) and 19 (RX)
 
 TinyGsm modem(SerialAT);
 TinyGsmClient client(modem);
@@ -21,15 +21,15 @@ TinyGsmClient client(modem);
 void setup() {
   SerialMon.begin(115200);
   delay(10);
-  SerialMon.println("=== Arduino Due + M10 + ThingsBoard ===");
+  SerialMon.println("=== M10 Manual Init Test ===");
 
-  // Start communication with modem
-  SerialAT.begin(115200);  // Try 115200 if 9600 doesn't work
+  // Start serial for modem
+  SerialAT.begin(115200);  // Try 115200 if needed
   delay(3000);
 
-  SerialMon.println("Restarting modem...");
-  if (!modem.restart()) {
-    SerialMon.println("Modem restart failed!");
+  SerialMon.println("Initializing modem (no restart)...");
+  if (!modem.init()) {
+    SerialMon.println("Modem init failed");
     return;
   }
 
@@ -39,26 +39,26 @@ void setup() {
 
   SerialMon.print("Waiting for network...");
   if (!modem.waitForNetwork()) {
-    SerialMon.println(" failed");
+    SerialMon.println(" fail");
     return;
   }
-  SerialMon.println(" connected");
+  SerialMon.println(" OK");
 
   SerialMon.print("Connecting to GPRS...");
   if (!modem.gprsConnect(apn, user, pass)) {
-    SerialMon.println(" failed");
+    SerialMon.println(" fail");
     return;
   }
-  SerialMon.println(" connected");
+  SerialMon.println(" OK");
 
-  SerialMon.print("Connecting to ThingsBoard...");
+  SerialMon.print("Connecting to server...");
   if (!client.connect(server, port)) {
-    SerialMon.println(" connection failed");
+    SerialMon.println(" fail");
     return;
   }
-  SerialMon.println(" connected");
+  SerialMon.println(" OK");
 
-  // Prepare HTTP POST
+  // Prepare HTTP POST request
   String url = String("/api/v1/") + token + "/telemetry";
   String payload = "{\"temperature\":25}";
 
@@ -71,9 +71,8 @@ void setup() {
   client.print("\r\n\r\n");
   client.print(payload);
 
-  SerialMon.println("Data sent. Waiting for response...");
+  SerialMon.println("Data sent. Reading response...");
 
-  // Read response
   while (client.connected() || client.available()) {
     if (client.available()) {
       char c = client.read();
@@ -82,9 +81,9 @@ void setup() {
   }
 
   client.stop();
-  SerialMon.println("\nDisconnected.");
+  SerialMon.println("\nDone.");
 }
 
 void loop() {
-  // Nothing here for now
+  // nothing
 }

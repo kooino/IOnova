@@ -13,7 +13,7 @@ const int  port     = 8080;
 const char token[]  = "A1_TEST_TOKEN";  // <-- Replace with your actual token
 
 #define SerialMon Serial
-SoftwareSerial SerialAT(7, 8); // RX, TX
+SoftwareSerial SerialAT(0, 1); // RX, TX
 
 TinyGsm modem(SerialAT);
 TinyGsmClient client(modem);
